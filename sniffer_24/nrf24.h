@@ -3,6 +3,10 @@
 
 #include <SPI.h>
 
+/* PINS */
+#define PIN_CE  8
+#define PIN_CSN 7
+
 /* COMMANDS */
 #define R_REGISTER      0x00    
 #define W_REGISTER      0x20
@@ -79,7 +83,7 @@
 #define BIT_RX_FULL     1
 #define BIT_RX_EMPTY    0
 
-void init_nrf24();
+void init_nrf24(void);
 void write_register (uint8_t reg_number, uint8_t value);
 uint8_t read_register (uint8_t reg_number);
 
