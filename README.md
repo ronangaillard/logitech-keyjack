@@ -26,9 +26,9 @@ I will be using the Logitech K400 for this keyjack, it is interesting because it
 ### Identitfying the chip
 First thing to do is to identify the chip in the keyboard :
 
-![pcb](images/logitech-pcb-overview.jpg "pcb")
+![pcb](images/logitech-pcb-overview.JPG "pcb")
 
-![pcb](images/nrf24-chip-logitech-side.jpg "pcb")
+![chip](images/nrf24-chip-logitech-side.JPG "chip")
 
 As most wireless input devices we have a nrf24 chip here. We will be able to listen to it (after some work). This is the aim of the `sniffer_24` code.
 
