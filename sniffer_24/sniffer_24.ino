@@ -1,4 +1,4 @@
-#include <SPI.h>
+#include "nrf24.h"
 
 void setup() {
   Serial.begin(115200);
