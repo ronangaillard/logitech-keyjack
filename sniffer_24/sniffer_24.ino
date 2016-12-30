@@ -1,4 +1,5 @@
 #include "nrf24.h"
+#include "logitech-device.h"
 
 void setup() {
   Serial.begin(115200);
@@ -15,6 +16,19 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  int channel = 0;
+
+  for(channel = LOGITECH_START_FREQUENCY; channel < LOGITECH_END_FREQUENCY; channel++) {
+      Serial.print("Listening to channel (");
+      Serial.print(channel, DEC);
+      Serial.println(")");
+
+      nrf24_set_channel(channel);
+
+      delay(1000);
+
+      if(!nrf24_rx_fifo_empty())
+        Serial.println("Heard something !!");
+  }
 
 }
