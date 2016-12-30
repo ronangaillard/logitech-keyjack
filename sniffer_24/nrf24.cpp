@@ -99,7 +99,7 @@ bool nrf24_rx_fifo_empty(void)
     return (fifo_status & (1 << BIT_RX_EMPTY));
 }
 
-void nrf24_set_channel(uint8_t channel)
+void nrf24_set_channel(int channel)
 {
     /**
     * Set RX/TX channel
