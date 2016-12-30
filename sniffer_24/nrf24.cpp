@@ -22,7 +22,7 @@ void init_nrf24(void) {
     /* Set registers to receive packet with nrf */
 
     /* Set RF channel */
-	write_register(REG_RF_CH, INIT_CHANNEL_MAPPED);
+    nrf24_set_channel(INIT_CHANNEL);
 
     /* Set length of incoming payload TODO : change these values */
 	write_register(REG_RX_PW_P0, 16 );

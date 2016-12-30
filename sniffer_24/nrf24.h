@@ -85,7 +85,6 @@
 
 /* CONSTANTS */
 #define INIT_CHANNEL        2405
-#define INIT_CHANNEL_MAPPED INIT_CHANNEL - 2400
 
 void init_nrf24(void);
 void write_register (uint8_t reg_number, uint8_t value);
