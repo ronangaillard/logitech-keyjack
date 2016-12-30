@@ -3,7 +3,7 @@
 
 void init_nrf24(void) {
     /**
-    * Inits and config the nrf24 moduel
+    * Inits and config the nrf24 module
     * 
     * @param none
     * @return none
@@ -34,6 +34,13 @@ void init_nrf24(void) {
 }
 
 void write_register (uint8_t reg_number, uint8_t value) {
+    /**
+    * Updates the designated NRF24 register with the byte valu
+    * 
+    * @param reg_number (uint8_t) Register number to be modified
+    * @param value (uint8_t) The value to be updated in the register
+    * @return none
+    */
     nrf24_select();
     SPI.transfer(W_REGISTER | (REGISTER_MASK & reg_number));
     SPI.transfer(value);
@@ -41,15 +48,33 @@ void write_register (uint8_t reg_number, uint8_t value) {
 }
 
 uint8_t read_register (uint8_t reg_number) {
+    /**
+    * Reads the designated register value in the nrf24 and returns it
+    * 
+    * @param reg_number (uint8_t) the registered to be read from
+    * @return (uint8_t) the value of the register
+    */
     nrf24_select();
     return SPI.transfer(R_REGISTER | (REGISTER_MASK & reg_number));
     nrf24_unselect();
 }
 
 void nrf24_select(void) {
+    /**
+    * Sets Slave Select pin LOW to select NRF24 chip to send SPI commands to it
+    * 
+    * @param none
+    * @return none
+    */
     digitalWrite(PIN_CSN, LOW);
 }
 
 void nrf24_unselect(void) {
+    /**
+    * Sets Slave Select pin to HIGH to send command to other SPI devices
+    * 
+    * @param none
+    * @return none
+    */
     digitalWrite(PIN_CSN, HIGH);
 }
