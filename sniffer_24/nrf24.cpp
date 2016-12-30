@@ -124,7 +124,7 @@ void nrf24_set_rx_address(uint8_t *address, uint8_t length)
     
     int i = 0;
 
-    SPI.transfer(R_REGISTER | (REGISTER_MASK & REG_RX_ADDR_P1));
+    SPI.transfer(W_REGISTER | (REGISTER_MASK & REG_RX_ADDR_P1));
 
     for (i = 0; i < length; i++)
         SPI.transfer(address[i]);
