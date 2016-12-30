@@ -80,7 +80,7 @@ void nrf24_unselect(void) {
     digitalWrite(PIN_CSN, HIGH);
 }
 
-bool nrf_rx_fifo_empty(void) {
+bool nrf24_rx_fifo_empty(void) {
     /**
     * Return state of RX FIFO
     * 
