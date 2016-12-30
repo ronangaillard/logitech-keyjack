@@ -55,7 +55,8 @@ uint8_t read_register (uint8_t reg_number) {
     * @return (uint8_t) the value of the register
     */
     nrf24_select();
-    return SPI.transfer(R_REGISTER | (REGISTER_MASK & reg_number));
+    SPI.transfer(R_REGISTER | (REGISTER_MASK & reg_number));
+    return SPI.transfer(0);
     nrf24_unselect();
 }
 
