@@ -92,3 +92,13 @@ bool nrf_rx_fifo_empty(void) {
 
 	return (fifo_status & (1 << BIT_RX_EMPTY));
 }
+
+void nrf24_set_channel(uint8_t channel) {
+    /**
+    * Set RX/TX channel
+    * 
+    * @param channel (uint8_t) the channel to listen to
+    * @return none
+    */
+    write_register(REG_RF_CH, channel - 2400);
+}
