@@ -26,8 +26,8 @@ void init_nrf24(void)
     nrf24_set_channel(INIT_CHANNEL);
 
     /* Set length of incoming payload TODO : change these values */
-    write_register(REG_RX_PW_P0, 16);
-    write_register(REG_RX_PW_P1, 16);
+    write_register(REG_RX_PW_P0, 22);
+    write_register(REG_RX_PW_P1, 22);
 
     /* Set RX mode */
     write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX));
