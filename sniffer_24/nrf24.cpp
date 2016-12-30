@@ -1,7 +1,8 @@
 #include "nrf24.h"
 #include <SPI.h>
 
-void init_nrf24(void) {
+void init_nrf24(void)
+{
     /**
     * Inits and config the nrf24 module
     * 
@@ -16,8 +17,8 @@ void init_nrf24(void) {
     digitalWrite(PIN_CSN, HIGH);
 
     SPI.begin();
-	SPI.setDataMode(SPI_MODE0);
-	SPI.setClockDivider(SPI_2XCLOCK_MASK);
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setClockDivider(SPI_2XCLOCK_MASK);
 
     /* Set registers to receive packet with nrf */
 
@@ -25,15 +26,16 @@ void init_nrf24(void) {
     nrf24_set_channel(INIT_CHANNEL);
 
     /* Set length of incoming payload TODO : change these values */
-	write_register(REG_RX_PW_P0, 16 );
-	write_register(REG_RX_PW_P1, 16 );
+    write_register(REG_RX_PW_P0, 16);
+    write_register(REG_RX_PW_P1, 16);
 
     /* Set RX mode */
-	write_register(REG_CONFIG,  (1<<BIT_PWR_UP) | (1<<BIT_PRIM_RX)); 
-	digitalWrite(PIN_CE, HIGH);
+    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX));
+    digitalWrite(PIN_CE, HIGH);
 }
 
-void write_register (uint8_t reg_number, uint8_t value) {
+void write_register(uint8_t reg_number, uint8_t value)
+{
     /**
     * Updates the designated NRF24 register with the byte valu
     * 
@@ -47,7 +49,8 @@ void write_register (uint8_t reg_number, uint8_t value) {
     nrf24_unselect();
 }
 
-uint8_t read_register (uint8_t reg_number) {
+uint8_t read_register(uint8_t reg_number)
+{
     /**
     * Reads the designated register value in the nrf24 and returns it
     * 
@@ -60,7 +63,8 @@ uint8_t read_register (uint8_t reg_number) {
     nrf24_unselect();
 }
 
-void nrf24_select(void) {
+void nrf24_select(void)
+{
     /**
     * Sets Slave Select pin LOW to select NRF24 chip to send SPI commands to it
     * 
@@ -70,7 +74,8 @@ void nrf24_select(void) {
     digitalWrite(PIN_CSN, LOW);
 }
 
-void nrf24_unselect(void) {
+void nrf24_unselect(void)
+{
     /**
     * Sets Slave Select pin to HIGH to send command to other SPI devices
     * 
@@ -80,7 +85,8 @@ void nrf24_unselect(void) {
     digitalWrite(PIN_CSN, HIGH);
 }
 
-bool nrf24_rx_fifo_empty(void) {
+bool nrf24_rx_fifo_empty(void)
+{
     /**
     * Return state of RX FIFO
     * 
@@ -90,10 +96,11 @@ bool nrf24_rx_fifo_empty(void) {
 
     uint8_t fifo_status = read_register(REG_FIFO_STATUS);
 
-	return (fifo_status & (1 << BIT_RX_EMPTY));
+    return (fifo_status & (1 << BIT_RX_EMPTY));
 }
 
-void nrf24_set_channel(uint8_t channel) {
+void nrf24_set_channel(uint8_t channel)
+{
     /**
     * Set RX/TX channel
     * 
