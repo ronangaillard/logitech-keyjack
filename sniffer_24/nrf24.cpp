@@ -34,6 +34,22 @@ void init_nrf24(void)
     digitalWrite(PIN_CE, HIGH);
 }
 
+void nrf24_set_bandwith(uint8_t bw)
+{
+    /**
+    * Sets the bandwith in MHz of the communication
+    * Allowed bandwith are 1MHz and 2MHz
+    * 
+    * @param bw the bandwith value in MHz
+    * @return none
+    */
+
+    if(bw == 1)
+        write_register(REG_STATUS, 1 << BIT_RF_DR);
+    else
+        write_register(REG_STATUS, 0 << BIT_RF_DR);
+}
+
 void write_register(uint8_t reg_number, uint8_t value)
 {
     /**
