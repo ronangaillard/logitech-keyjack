@@ -34,10 +34,22 @@ void init_nrf24(void) {
 }
 
 void write_register (uint8_t reg_number, uint8_t value) {
+    nrf24_select();
     SPI.transfer(W_REGISTER | (REGISTER_MASK & reg_number));
     SPI.transfer(value);
+    nrf24_unselect();
 }
 
 uint8_t read_register (uint8_t reg_number) {
+    nrf24_select();
     return SPI.transfer(R_REGISTER | (REGISTER_MASK & reg_number));
+    nrf24_unselect();
+}
+
+void nrf24_select(void) {
+    digitalWrite(PIN_CSN, LOW);
+}
+
+void nrf24_unselect(void) {
+    digitalWrite(PIN_CSN, HIGH);
 }
