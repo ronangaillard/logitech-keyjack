@@ -92,5 +92,6 @@ void write_register (uint8_t reg_number, uint8_t value);
 uint8_t read_register (uint8_t reg_number);
 void nrf24_select(void);
 void nrf24_unselect(void);
+bool nrf_rx_fifo_empty(void);
 
 #endif

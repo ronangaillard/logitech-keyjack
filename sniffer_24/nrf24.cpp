@@ -79,3 +79,16 @@ void nrf24_unselect(void) {
     */
     digitalWrite(PIN_CSN, HIGH);
 }
+
+bool nrf_rx_fifo_empty(void) {
+    /**
+    * Return state of RX FIFO
+    * 
+    * @param none
+    * @return boolean corresponding to FIFO state (true -> FIFO is empty)
+    */
+
+    uint8_t fifo_status = read_register(REG_FIFO_STATUS);
+
+	return (fifo_status & (1 << BIT_RX_EMPTY));
+}
