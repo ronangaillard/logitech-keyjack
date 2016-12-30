@@ -11,13 +11,13 @@
         {
             "taskName": "verify sniffer",
             "args": ["sniffer_24/sniffer_24.ino", "--verify"],
-            "suppressTaskName": true,
-            "isBuildCommand": true
+            "suppressTaskName": true
         },
         {
             "taskName": "upload sniffer",
-            "args": ["sniffer_24/sniffer_24.ino", "--upload"],
-            "suppressTaskName": true
+            "args": ["sniffer_24/sniffer_24.ino", "--upload", "--port", "/dev/cu.wchusbserial1410", "--board", "arduino:avr:nano:cpu=atmega328"],
+            "suppressTaskName": true,
+            "isBuildCommand": true
         }
     ]
 }
