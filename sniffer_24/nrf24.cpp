@@ -34,8 +34,8 @@ void init_nrf24(void)
     /* Sets address width */
     write_register(REG_SETUP_AW, 0x3);
 
-    /* Set RX mode */
-    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX));
+    /* Set RX mode and CRC to 2 bytes */
+    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
     
 
     /* Set RF channel */
