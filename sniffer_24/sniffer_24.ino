@@ -2,6 +2,7 @@
 #include "logitech-device.h"
 
 uint8_t base_mac_address[] = {0xBB, 0x0A, 0xDC, 0xA5, 0x75};
+uint8_t base_mac_address_reversed[] = {0x75, 0xA5, 0xDC, 0x0A, 0xBB};
 
 void setup() {
   Serial.begin(115200);
@@ -17,26 +18,33 @@ void setup() {
   Serial.print("Channel is : ");
   Serial.println(channel + 2400, DEC);
 
-  nrf24_set_rx_address(base_mac_address, 5);
+  nrf24_set_rx_address_p0(base_mac_address, 5);
+  nrf24_set_rx_address_p1(base_mac_address_reversed, 5);
 }
 
 void loop() {
   int channel = 0;
 
   for(channel = LOGITECH_START_FREQUENCY; channel < LOGITECH_END_FREQUENCY; channel++) {
-      Serial.print("Listening to channel (");
-      Serial.print(channel, DEC);
-      Serial.println(")");
+      //Serial.print("Listening to channel (");
+      //Serial.print(channel, DEC);
+      //Serial.println(")");
 
       nrf24_set_channel(channel);
+      digitalWrite(PIN_CE, HIGH);
 
-      delay(30000);
 
-      if(!nrf24_rx_fifo_empty())
-        Serial.println("Heard something !!");
+      delay(1000);
+      digitalWrite(PIN_CE, LOW);
+
+      if(!nrf24_rx_fifo_empty()) {
+        Serial.print("Received something on channel : ");
+        Serial.println(channel, DEC);
+      }
   }
 
-  Serial.println("DONE ! RESET TO RESTART !");
-  while(1) {}
+  Serial.println("Looped ! ");
+
+  
 
 }

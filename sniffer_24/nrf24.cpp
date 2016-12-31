@@ -134,10 +134,34 @@ void nrf24_set_channel(int channel)
     write_register(REG_RF_CH, channel - 2400);
 }
 
-void nrf24_set_rx_address(uint8_t *address, uint8_t length)
+void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
 {
     /**
-    * Set RX address of NRF 24
+    * Set RX address of NRF 24 (pipe 0)
+    * This is usually known as the max address (5 bytes)
+    * The address can vary between 3 and 5 bytes
+    * 
+    * @param address an array containing the bytes of the address
+    * @param length the number of bytes of the address
+    * @return none
+    */
+    
+    int i = 0;
+
+    nrf24_select();
+
+    SPI.transfer(W_REGISTER | (REGISTER_MASK & REG_RX_ADDR_P0));
+
+    for (i = 0; i < length; i++)
+        SPI.transfer(address[i]);
+
+    nrf24_unselect();
+}
+
+void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
+{
+    /**
+    * Set RX address of NRF 24 (pipe 1)
     * This is usually known as the max address (5 bytes)
     * The address can vary between 3 and 5 bytes
     * 

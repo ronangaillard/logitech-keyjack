@@ -94,6 +94,7 @@ void nrf24_select(void);
 void nrf24_unselect(void);
 bool nrf24_rx_fifo_empty(void);
 void nrf24_set_channel(int channel);
-void nrf24_set_rx_address(uint8_t *address, uint8_t length);
+void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length);
+void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length);
 
 #endif
