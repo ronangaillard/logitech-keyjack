@@ -22,7 +22,7 @@ void init_nrf24(void)
 
     digitalWrite(PIN_CE, HIGH);
 
-    nrf24_toggle_activate();
+    //nrf24_toggle_activate();
 
     /* Set registers to receive packet with nrf */
 
@@ -36,15 +36,15 @@ void init_nrf24(void)
     /* Sets address width */
     write_register(REG_SETUP_AW, 0x3);
 
-    /* Set RX mode and CRC to 2 bytes */
-    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
-
     /* Enable dynamic payload length on pipe 0 and 1 */
     write_register(REG_DYNPD, 0x33);
     
 
     /* Set RF channel */
     nrf24_set_channel(INIT_CHANNEL);
+
+    /* Set RX mode and CRC to 2 bytes (and poweron on) */
+    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
 }
 
 void nrf24_set_bandwith(uint8_t bw)
@@ -189,8 +189,21 @@ void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
 
 void nrf24_toggle_activate(void) 
 {
+    /**
+    * Toogle dynamic/static payload length
+    *
+    * @param none
+    * @return none
+    */
+
+    /* Power off */
+    write_register(REG_CONFIG, (0 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
+
     nrf24_select();
     SPI.transfer(ACTIVATE);
     SPI.transfer(0x73);
     nrf24_unselect();
+
+    /* Power on */
+    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
 }
