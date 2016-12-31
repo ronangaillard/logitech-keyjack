@@ -20,18 +20,26 @@ void init_nrf24(void)
     SPI.setDataMode(SPI_MODE0);
     SPI.setClockDivider(SPI_2XCLOCK_MASK);
 
-    /* Set registers to receive packet with nrf */
+    digitalWrite(PIN_CE, HIGH);
 
-    /* Set RF channel */
-    nrf24_set_channel(INIT_CHANNEL);
+    /* Set registers to receive packet with nrf */
 
     /* Set length of incoming payload TODO : change these values */
     write_register(REG_RX_PW_P0, 22);
     write_register(REG_RX_PW_P1, 22);
 
+    /* Enable RX addresses */
+    write_register(REG_EN_RXADDR, 1 << BIT_ERX_P1);
+
+    /* Sets address width */
+    write_register(REG_SETUP_AW, 0x3);
+
     /* Set RX mode */
     write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX));
-    digitalWrite(PIN_CE, HIGH);
+    
+
+    /* Set RF channel */
+    nrf24_set_channel(INIT_CHANNEL);
 }
 
 void nrf24_set_bandwith(uint8_t bw)
