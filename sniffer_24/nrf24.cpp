@@ -45,9 +45,9 @@ void nrf24_set_bandwith(uint8_t bw)
     */
 
     if(bw == 1)
-        write_register(REG_STATUS, 1 << BIT_RF_DR);
-    else
         write_register(REG_STATUS, 0 << BIT_RF_DR);
+    else
+        write_register(REG_STATUS, 1 << BIT_RF_DR);
 }
 
 void write_register(uint8_t reg_number, uint8_t value)
