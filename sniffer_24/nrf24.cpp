@@ -22,6 +22,8 @@ void init_nrf24(void)
 
     digitalWrite(PIN_CE, HIGH);
 
+    nrf24_toggle_activate();
+
     /* Set registers to receive packet with nrf */
 
     /* Set length of incoming payload TODO : change these values */
@@ -36,6 +38,9 @@ void init_nrf24(void)
 
     /* Set RX mode and CRC to 2 bytes */
     write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
+
+    /* Enable dynamic payload length on pipe 0 and 1 */
+    write_register(REG_DYNPD, 0x33);
     
 
     /* Set RF channel */
@@ -179,5 +184,13 @@ void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
     for (i = 0; i < length; i++)
         SPI.transfer(address[i]);
 
+    nrf24_unselect();
+}
+
+void nrf24_toggle_activate(void) 
+{
+    nrf24_select();
+    SPI.transfer(ACTIVATE);
+    SPI.transfer(0x73);
     nrf24_unselect();
 }

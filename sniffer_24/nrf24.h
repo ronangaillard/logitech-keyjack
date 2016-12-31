@@ -11,6 +11,7 @@
 #define R_REGISTER      0x00    
 #define W_REGISTER      0x20
 #define REGISTER_MASK   0x1F
+#define ACTIVATE         0x50
 #define R_RX_PAYLOAD    0x61
 #define W_TX_PAYLOAD    0xA0
 #define FLUSH_TX        0xE1
@@ -42,6 +43,7 @@
 #define REG_RX_PW_P3    0x14
 #define REG_RX_PW_P4    0x15
 #define REG_FIFO_STATUS 0x17
+#define REG_DYNPD       0x1C
 
 /* BIT MNEMONIC */
 #define BIT_MASK_RX_DR  6
@@ -96,5 +98,6 @@ bool nrf24_rx_fifo_empty(void);
 void nrf24_set_channel(int channel);
 void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length);
 void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length);
+void nrf24_toggle_activate(void);
 
 #endif
