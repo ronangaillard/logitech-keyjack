@@ -25,7 +25,7 @@ void setup() {
 void loop() {
   int channel = 0;
 
-  for(channel = LOGITECH_START_FREQUENCY; channel < LOGITECH_END_FREQUENCY; channel++) {
+  for(channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel++) {
       //Serial.print("Listening to channel (");
       //Serial.print(channel, DEC);
       //Serial.println(")");
