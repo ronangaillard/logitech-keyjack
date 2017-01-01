@@ -25,7 +25,7 @@ void setup() {
 }
 
 void loop() {
-  int channel = 0;
+  int channel,j  = 0;
 
   for(channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel++) {
       //Serial.print("Listening to channel (");
@@ -33,15 +33,14 @@ void loop() {
       //Serial.println(")");
 
       nrf24_set_channel(channel);
-      digitalWrite(PIN_CE, HIGH);
 
-
+      for(j =0; j < 10; j++) {
       delay(1000);
-      digitalWrite(PIN_CE, LOW);
 
       if(!nrf24_rx_fifo_empty()) {
         Serial.print("Received something on channel : ");
         Serial.println(channel, DEC);
+        }
       }
   }
 
