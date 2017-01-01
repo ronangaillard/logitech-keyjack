@@ -33,18 +33,19 @@ void loop() {
       //Serial.println(")");
 
       nrf24_set_channel(channel);
-
+      
       for(j =0; j < 10; j++) {
-      delay(1000);
+        delay(1000);
 
-      if(!nrf24_rx_fifo_empty()) {
-        Serial.print("Received something on channel : ");
-        Serial.println(channel, DEC);
+        if(!nrf24_rx_fifo_empty()) {
+          Serial.print("Received something on channel : ");
+          Serial.println(channel, DEC);
         }
       }
   }
 
   Serial.println("Looped ! ");
+  nrf24_toggle_activate();
 
   
 
