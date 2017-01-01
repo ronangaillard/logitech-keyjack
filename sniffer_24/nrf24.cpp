@@ -19,11 +19,6 @@ void init_nrf24(void)
     SPI.begin();
     SPI.setDataMode(SPI_MODE0);
     SPI.setClockDivider(SPI_2XCLOCK_MASK);
-
-    digitalWrite(PIN_CE, HIGH);
-
-    //nrf24_toggle_activate();
-
     /* Set registers to receive packet with nrf */
 
     /* Set length of incoming payload TODO : change these values */
@@ -38,13 +33,12 @@ void init_nrf24(void)
 
     /* Enable dynamic payload length on pipe 0 and 1 */
     write_register(REG_DYNPD, 0x33);
-    
 
     /* Set RF channel */
     nrf24_set_channel(INIT_CHANNEL);
 
-    /* Set RX mode and CRC to 2 bytes (and poweron on) */
-    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
+    nrf24_power_rx();
+
 }
 
 void nrf24_set_bandwith(uint8_t bw)
@@ -61,6 +55,9 @@ void nrf24_set_bandwith(uint8_t bw)
         write_register(REG_STATUS, 0 << BIT_RF_DR);
     else
         write_register(REG_STATUS, 1 << BIT_RF_DR);
+
+    /* Not sure if needed */
+    nrf24_power_rx();      
 }
 
 void write_register(uint8_t reg_number, uint8_t value)
@@ -137,6 +134,33 @@ void nrf24_set_channel(int channel)
     * @return none
     */
     write_register(REG_RF_CH, channel - 2400);
+
+    /* Re-power the nrf 24 to take changes into account */
+    nrf24_power_rx();
+}
+
+void nrf24_power_rx(void)
+{
+    /**
+    * Re-powers the RX part (needed to take payload and channel changes into account)
+    * Also flushes RX
+    * 
+    * @param none
+    * @return none
+    */
+
+    /* Set RX mode and CRC to 2 bytes (and poweron on) */
+    digitalWrite(PIN_CE, LOW);
+    write_register(REG_CONFIG, CONFIG_VALUE);
+    digitalWrite(PIN_CE, HIGH);
+
+    /* Power up */
+    write_register(REG_STATUS, (1 << BIT_TX_DS) | (1 << BIT_MAX_RT));
+
+    /* Flush RX */
+    nrf24_select();
+    SPI.transfer( FLUSH_RX );
+    nrf24_unselect();
 }
 
 void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
@@ -152,7 +176,7 @@ void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
     */
     
     int i = 0;
-
+    digitalWrite(PIN_CE, LOW);
     nrf24_select();
 
     SPI.transfer(W_REGISTER | (REGISTER_MASK & REG_RX_ADDR_P0));
@@ -161,6 +185,10 @@ void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
         SPI.transfer(address[i]);
 
     nrf24_unselect();
+    digitalWrite(PIN_CE, HIGH);
+
+    /* Re-power the nrf 24 just in case (not sure it is needed) */
+    nrf24_power_rx();
 }
 
 void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
@@ -176,7 +204,7 @@ void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
     */
     
     int i = 0;
-
+    digitalWrite(PIN_CE, LOW);
     nrf24_select();
 
     SPI.transfer(W_REGISTER | (REGISTER_MASK & REG_RX_ADDR_P1));
@@ -185,6 +213,10 @@ void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
         SPI.transfer(address[i]);
 
     nrf24_unselect();
+    digitalWrite(PIN_CE, HIGH);
+
+    /* Re-power the nrf 24 just in case (not sure it is needed) */
+    nrf24_power_rx();
 }
 
 void nrf24_toggle_activate(void) 
@@ -197,7 +229,8 @@ void nrf24_toggle_activate(void)
     */
 
     /* Power off */
-    write_register(REG_CONFIG, (0 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
+    digitalWrite(PIN_CE, LOW);
+    write_register(REG_CONFIG, 0);
 
     nrf24_select();
     SPI.transfer(ACTIVATE);
@@ -205,5 +238,6 @@ void nrf24_toggle_activate(void)
     nrf24_unselect();
 
     /* Power on */
-    write_register(REG_CONFIG, (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO));
+    write_register(REG_CONFIG, CONFIG_VALUE);
+    digitalWrite(PIN_CE, HIGH);
 }

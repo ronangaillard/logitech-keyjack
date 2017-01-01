@@ -3,6 +3,8 @@
 
 #include <SPI.h>
 
+#define CONFIG_VALUE      (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO) | (0 << BIT_EN_CRC)
+
 /* PINS */
 #define PIN_CE  8
 #define PIN_CSN 7
@@ -99,5 +101,6 @@ void nrf24_set_channel(int channel);
 void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length);
 void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length);
 void nrf24_toggle_activate(void);
+void nrf24_power_rx(void);
 
 #endif
