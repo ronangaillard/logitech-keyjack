@@ -230,7 +230,7 @@ void nrf24_toggle_activate(void)
 
     /* Power off */
     digitalWrite(PIN_CE, LOW);
-    write_register(REG_CONFIG, 0);
+    nrf24_set_config(0);
 
     nrf24_select();
     SPI.transfer(ACTIVATE);
@@ -238,6 +238,38 @@ void nrf24_toggle_activate(void)
     nrf24_unselect();
 
     /* Power on */
-    write_register(REG_CONFIG, CONFIG_VALUE);
+    nrf24_set_config(CONFIG_VALUE);
     digitalWrite(PIN_CE, HIGH);
+}
+
+void nrf24_enable_dpl(void)
+{
+    /**
+    * Enable dynamic payload
+    *
+    * @param none
+    * @return none
+    */
+
+    write_register(REG_FEATURE, (1 << BIT_EN_DPL));
+    write_register(REG_EN_AA, ((1 << BIT_ENAA_P0) | (1 , BIT_ENAA_P1)) );
+    write_register(REG_DYNPD, ((1 << BIT_DPL0) | (1 << BIT_DPL1)) );
+
+    nrf24_toggle_activate();
+}
+
+void nrf24_disable_dpl(void)
+{
+    /**
+    * Disable dynamic payload (-> static payload)
+    *
+    * @param none
+    * @return none
+    */
+
+    write_register(REG_FEATURE, (0 << BIT_EN_DPL));
+    write_register(REG_EN_AA, ((0 << BIT_ENAA_P0) | (1 , BIT_ENAA_P1)) );
+    write_register(REG_DYNPD, ((0 << BIT_DPL0) | (1 << BIT_DPL1)) );
+
+    nrf24_toggle_activate();
 }

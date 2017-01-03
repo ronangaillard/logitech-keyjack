@@ -46,6 +46,7 @@
 #define REG_RX_PW_P4    0x15
 #define REG_FIFO_STATUS 0x17
 #define REG_DYNPD       0x1C
+#define REG_FEATURE     0x1D
 
 /* BIT MNEMONIC */
 #define BIT_MASK_RX_DR  6
@@ -86,9 +87,12 @@
 #define BIT_TX_EMPTY    4
 #define BIT_RX_FULL     1
 #define BIT_RX_EMPTY    0
+#define BIT_EN_DPL      2
+#define BIT_DPL0        0
+#define BIT_DPL1        1
 
 /* CONSTANTS */
-#define INIT_CHANNEL        2405
+#define INIT_CHANNEL        2423
 
 void init_nrf24(void);
 void write_register (uint8_t reg_number, uint8_t value);
@@ -102,5 +106,8 @@ void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length);
 void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length);
 void nrf24_toggle_activate(void);
 void nrf24_power_rx(void);
+void nrf24_set_config(uint8_t value);
+void nrf24_enable_dpl(void);
+void nrf24_disable_dpl(void);
 
 #endif
