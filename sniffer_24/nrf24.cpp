@@ -32,13 +32,10 @@ void init_nrf24(void)
     write_register(REG_SETUP_AW, 0x3);
 
     /* Enable dynamic payload length on pipe 0 and 1 */
-    write_register(REG_DYNPD, 0x33);
+    //write_register(REG_DYNPD, 0x33);
 
     /* Set RF channel */
     nrf24_set_channel(INIT_CHANNEL);
-
-    nrf24_power_rx();
-
 }
 
 void nrf24_set_bandwith(uint8_t bw)
@@ -55,9 +52,6 @@ void nrf24_set_bandwith(uint8_t bw)
         write_register(REG_STATUS, 0 << BIT_RF_DR);
     else
         write_register(REG_STATUS, 1 << BIT_RF_DR);
-
-    /* Not sure if needed */
-    nrf24_power_rx();      
 }
 
 void write_register(uint8_t reg_number, uint8_t value)
@@ -134,9 +128,6 @@ void nrf24_set_channel(int channel)
     * @return none
     */
     write_register(REG_RF_CH, channel - 2400);
-
-    /* Re-power the nrf 24 to take changes into account */
-    nrf24_power_rx();
 }
 
 void nrf24_power_rx(void)
@@ -150,9 +141,7 @@ void nrf24_power_rx(void)
     */
 
     /* Set RX mode and CRC to 2 bytes (and poweron on) */
-    digitalWrite(PIN_CE, LOW);
-    write_register(REG_CONFIG, CONFIG_VALUE);
-    digitalWrite(PIN_CE, HIGH);
+    nrf24_set_config(CONFIG_VALUE);
 
     /* Power up */
     write_register(REG_STATUS, (1 << BIT_TX_DS) | (1 << BIT_MAX_RT));
@@ -163,6 +152,19 @@ void nrf24_power_rx(void)
     nrf24_unselect();
 }
 
+void nrf24_set_config(uint8_t value)
+{
+    /**
+    * Sets the config register value
+    * 
+    * @param value (uint8_t) the value of the register to be set
+    * @return none
+    */
+
+    digitalWrite(PIN_CE, LOW);
+    write_register(REG_CONFIG, value);
+    digitalWrite(PIN_CE, HIGH);
+}
 void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
 {
     /**
@@ -186,9 +188,6 @@ void nrf24_set_rx_address_p0(uint8_t *address, uint8_t length)
 
     nrf24_unselect();
     digitalWrite(PIN_CE, HIGH);
-
-    /* Re-power the nrf 24 just in case (not sure it is needed) */
-    nrf24_power_rx();
 }
 
 void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
@@ -214,9 +213,6 @@ void nrf24_set_rx_address_p1(uint8_t *address, uint8_t length)
 
     nrf24_unselect();
     digitalWrite(PIN_CE, HIGH);
-
-    /* Re-power the nrf 24 just in case (not sure it is needed) */
-    nrf24_power_rx();
 }
 
 void nrf24_toggle_activate(void) 
