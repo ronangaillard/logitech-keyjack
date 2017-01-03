@@ -248,7 +248,7 @@ void nrf24_enable_dpl(void)
     */
 
     write_register(REG_FEATURE, (1 << BIT_EN_DPL));
-    write_register(REG_EN_AA, ((1 << BIT_ENAA_P0) | (1 , BIT_ENAA_P1)) );
+    write_register(REG_EN_AA, ((1 << BIT_ENAA_P0) | (1 << BIT_ENAA_P1)) );
     write_register(REG_DYNPD, ((1 << BIT_DPL0) | (1 << BIT_DPL1)) );
 
     nrf24_toggle_activate();
@@ -264,7 +264,7 @@ void nrf24_disable_dpl(void)
     */
 
     write_register(REG_FEATURE, (0 << BIT_EN_DPL));
-    write_register(REG_EN_AA, ((0 << BIT_ENAA_P0) | (0 , BIT_ENAA_P1)) );
+    write_register(REG_EN_AA, ((0 << BIT_ENAA_P0) | (0 << BIT_ENAA_P1)) );
     write_register(REG_DYNPD, ((0 << BIT_DPL0) | (0 << BIT_DPL1)) );
 
     nrf24_toggle_activate();
