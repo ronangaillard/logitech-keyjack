@@ -3,8 +3,6 @@
 
 uint8_t base_mac_address[] = {0xBB, 0x0A, 0xDC, 0xA5, 0x75};
 uint8_t base_mac_address_reversed[] = {0x75, 0xA5, 0xDC, 0x0A, 0xBB};
-uint8_t dongle_mac_address[] = {0x04, 0x6D, 0xC5, 0x2B, 0x00};
-uint8_t dongle_mac_address_reversed[] = {0x00, 0x2B, 0xC5, 0x6D, 0x04};
 
 void setup() {
   Serial.begin(115200);
@@ -15,36 +13,35 @@ void setup() {
 
   uint8_t channel = read_register(REG_RF_CH);
 
-  Serial.print("Channel should be : ");
-  Serial.println(INIT_CHANNEL, DEC);
   Serial.print("Channel is : ");
   Serial.println(channel + 2400, DEC);
 
   nrf24_set_rx_address_p0(base_mac_address, 5);
   nrf24_set_rx_address_p1(base_mac_address_reversed, 5);
+  
+  nrf24_power_rx();
 }
 
 void loop() {
-  int channel,j  = 0;
+  int channel, j=0;
 
-  for(channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel++) {
-      //Serial.print("Listening to channel (");
-      //Serial.print(channel, DEC);
-      //Serial.println(")");
-
+  for(channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel+=3) {
       nrf24_set_channel(channel);
+
+      nrf24_power_rx();
       
-      for(j =0; j < 10; j++) {
-        delay(1000);
+      
+        delay(500);
 
         if(!nrf24_rx_fifo_empty()) {
           Serial.print("Received something on channel : ");
           Serial.println(channel, DEC);
         }
-      }
+      
+      Serial.print('.');
   }
 
-  Serial.println("Looped ! ");
+  Serial.println("|");
   nrf24_toggle_activate();
 
   
