@@ -4,6 +4,8 @@
 uint8_t base_mac_address[] = {0xBB, 0x0A, 0xDC, 0xA5, 0x75};
 uint8_t base_mac_address_reversed[] = {0x75, 0xA5, 0xDC, 0x0A, 0xBB};
 
+bool dpl_mode = false;
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting...");
@@ -42,7 +44,12 @@ void loop() {
   }
 
   Serial.println("|");
-  nrf24_toggle_activate();
+  if(dpl_mode)
+    nrf24_enable_dpl();
+  else
+    nrf24_disable_dpl();
+
+  dpl_mode = !dpl_mode;
 
   
 
