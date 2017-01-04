@@ -3,7 +3,11 @@
 
 #include <SPI.h>
 
-#define CONFIG_VALUE      (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX) | (1 << BIT_CRCO) | (0 << BIT_EN_CRC)
+#define CONFIG_VALUE_PW_DW  ((1 << BIT_CRCO) | (0 << BIT_EN_CRC))
+#define CONFIG_VALUE        (CONFIG_VALUE_PW_DW | (1 << BIT_PWR_UP) | (1 << BIT_PRIM_RX)) 
+
+#define DEFAULT_RF_SETUP    ( (1 << BIT_LNA_HCURR ) | (0x3 << BIT_RF_PWR))
+
 
 /* PINS */
 #define PIN_CE  8
@@ -13,7 +17,7 @@
 #define R_REGISTER      0x00    
 #define W_REGISTER      0x20
 #define REGISTER_MASK   0x1F
-#define ACTIVATE         0x50
+#define ACTIVATE        0x50
 #define R_RX_PAYLOAD    0x61
 #define W_TX_PAYLOAD    0xA0
 #define FLUSH_TX        0xE1
@@ -92,7 +96,7 @@
 #define BIT_DPL1        1
 
 /* CONSTANTS */
-#define INIT_CHANNEL        2423
+#define INIT_CHANNEL        2402
 
 void init_nrf24(void);
 void write_register (uint8_t reg_number, uint8_t value);

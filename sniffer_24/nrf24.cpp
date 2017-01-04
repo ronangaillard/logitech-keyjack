@@ -21,18 +21,20 @@ void init_nrf24(void)
     SPI.setClockDivider(SPI_2XCLOCK_MASK);
     /* Set registers to receive packet with nrf */
 
+    /* Power down */
+    nrf24_set_config(CONFIG_VALUE_PW_DW);
+
     /* Set length of incoming payload TODO : change these values */
     write_register(REG_RX_PW_P0, 22);
     write_register(REG_RX_PW_P1, 22);
 
     /* Enable RX addresses */
-    write_register(REG_EN_RXADDR, 1 << BIT_ERX_P1);
+    write_register(REG_EN_RXADDR, ( (1 << BIT_ERX_P0) | (1 << BIT_ERX_P1) ));
 
     /* Sets address width */
-    write_register(REG_SETUP_AW, 0x3);
+    write_register(REG_SETUP_AW, 0x3);    
 
-    /* Enable dynamic payload length on pipe 0 and 1 */
-    //write_register(REG_DYNPD, 0x33);
+    nrf24_disable_dpl();
 
     /* Set RF channel */
     nrf24_set_channel(INIT_CHANNEL);
@@ -49,9 +51,9 @@ void nrf24_set_bandwith(uint8_t bw)
     */
 
     if(bw == 1)
-        write_register(REG_STATUS, 0 << BIT_RF_DR);
+        write_register(REG_RF_SETUP, (DEFAULT_RF_SETUP | 0 << BIT_RF_DR));
     else
-        write_register(REG_STATUS, 1 << BIT_RF_DR);
+        write_register(REG_RF_SETUP, (DEFAULT_RF_SETUP | 1 << BIT_RF_DR));
 }
 
 void write_register(uint8_t reg_number, uint8_t value)
@@ -63,6 +65,9 @@ void write_register(uint8_t reg_number, uint8_t value)
     * @param value (uint8_t) The value to be updated in the register
     * @return none
     */
+
+    digitalWrite(PIN_CE, LOW);
+    nrf24_unselect();
     nrf24_select();
     SPI.transfer(W_REGISTER | (REGISTER_MASK & reg_number));
     SPI.transfer(value);
@@ -77,9 +82,10 @@ uint8_t read_register(uint8_t reg_number)
     * @param reg_number (uint8_t) the registered to be read from
     * @return (uint8_t) the value of the register
     */
+    nrf24_unselect();
     nrf24_select();
     SPI.transfer(R_REGISTER | (REGISTER_MASK & reg_number));
-    return SPI.transfer(0);
+    return SPI.transfer(0xFF);
     nrf24_unselect();
 }
 
@@ -114,9 +120,10 @@ bool nrf24_rx_fifo_empty(void)
     * @return boolean corresponding to FIFO state (true -> FIFO is empty)
     */
 
+    uint8_t status = read_register(REG_STATUS);
     uint8_t fifo_status = read_register(REG_FIFO_STATUS);
 
-    return (fifo_status & (1 << BIT_RX_EMPTY));
+    return ( !(status & (1 << BIT_RX_DR)) ) | (fifo_status & (1 << BIT_RX_EMPTY) );
 }
 
 void nrf24_set_channel(int channel)
@@ -144,12 +151,17 @@ void nrf24_power_rx(void)
     nrf24_set_config(CONFIG_VALUE);
 
     /* Power up */
-    write_register(REG_STATUS, (1 << BIT_TX_DS) | (1 << BIT_MAX_RT));
+    write_register(REG_STATUS, (1 << BIT_RX_DR) | (1 << BIT_MAX_RT));
 
     /* Flush RX */
     nrf24_select();
     SPI.transfer( FLUSH_RX );
     nrf24_unselect();
+
+    /* Test */
+    digitalWrite(PIN_CE, LOW);
+    delay(50);
+    digitalWrite(PIN_CE, HIGH);
 }
 
 void nrf24_set_config(uint8_t value)
@@ -226,7 +238,7 @@ void nrf24_toggle_activate(void)
 
     /* Power off */
     digitalWrite(PIN_CE, LOW);
-    nrf24_set_config(0);
+    nrf24_set_config(CONFIG_VALUE_PW_DW);
 
     nrf24_select();
     SPI.transfer(ACTIVATE);
@@ -236,6 +248,8 @@ void nrf24_toggle_activate(void)
     /* Power on */
     nrf24_set_config(CONFIG_VALUE);
     digitalWrite(PIN_CE, HIGH);
+    
+    nrf24_power_rx();
 }
 
 void nrf24_enable_dpl(void)
@@ -263,9 +277,9 @@ void nrf24_disable_dpl(void)
     * @return none
     */
 
-    write_register(REG_FEATURE, (0 << BIT_EN_DPL));
-    write_register(REG_EN_AA, ((0 << BIT_ENAA_P0) | (0 << BIT_ENAA_P1)) );
-    write_register(REG_DYNPD, ((0 << BIT_DPL0) | (0 << BIT_DPL1)) );
+    write_register(REG_FEATURE, 0);
+    write_register(REG_EN_AA, ((1 << BIT_ENAA_P0) | (1 << BIT_ENAA_P1)) );
+    write_register(REG_DYNPD, 0);
 
     nrf24_toggle_activate();
 }
