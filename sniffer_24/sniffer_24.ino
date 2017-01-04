@@ -6,7 +6,8 @@ uint8_t base_mac_address_reversed[] = {0x75, 0xA5, 0xDC, 0x0A, 0xBB};
 
 bool dpl_mode = false;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial.println("Starting...");
 
@@ -18,39 +19,38 @@ void setup() {
   Serial.print("Channel is : ");
   Serial.println(channel + 2400, DEC);
 
-  nrf24_set_rx_address_p0(base_mac_address, 5);
-  nrf24_set_rx_address_p1(base_mac_address_reversed, 5);
-  
+  nrf24_set_rx_address_p1(base_mac_address, 5);
+  nrf24_set_rx_address_p0(base_mac_address_reversed, 5);
+
   nrf24_power_rx();
 }
 
-void loop() {
-  int channel, j=0;
+void loop()
+{
+  int channel, j = 0;
+  bool kb_found = false;
+  Serial.println("Looking for keyboard :o");
 
-  for(channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel+=3) {
+  while (!kb_found)
+  {
+    for (channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel += 3)
+    {
       nrf24_set_channel(channel);
 
       nrf24_power_rx();
-      
-      
-        delay(500);
 
-        if(!nrf24_rx_fifo_empty()) {
-          Serial.print("Received something on channel : ");
-          Serial.println(channel, DEC);
-        }
-      
-      Serial.print('.');
+      delay(100);
+
+      if (!nrf24_rx_fifo_empty())
+      {
+        Serial.print("\r\nKeyboard is on channel : ");
+        Serial.println(channel, DEC);
+        break;
+      }
+
+      Serial.print(".");
+    }
   }
 
-  Serial.println("|");
-  if(dpl_mode)
-    nrf24_enable_dpl();
-  else
-    nrf24_disable_dpl();
-
-  dpl_mode = !dpl_mode;
-
-  
-
+  Serial.println("Reading data");
 }
