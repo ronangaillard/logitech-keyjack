@@ -45,6 +45,7 @@ void loop()
       {
         Serial.print("\r\nKeyboard is on channel : ");
         Serial.println(channel, DEC);
+        kb_found = true;
         break;
       }
 
@@ -53,4 +54,16 @@ void loop()
   }
 
   Serial.println("Reading data");
+  uint8_t rx_fifo[PAYLOAD_SIZE];
+
+  nrf24_read_rx_data(rx_fifo);
+
+  for(j = 0; j < PAYLOAD_SIZE; j++) {
+    Serial.print("data[");
+    Serial.print(j, DEC);
+    Serial.print("] = 0x");
+    Serial.println(rx_fifo[j], HEX);
+  }
+
+  while(1) {}
 }
