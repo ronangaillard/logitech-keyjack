@@ -24,9 +24,9 @@ void init_nrf24(void)
     /* Power down */
     nrf24_set_config(CONFIG_VALUE_PW_DW);
 
-    /* Set length of incoming payload TODO : change these values */
-    write_register(REG_RX_PW_P0, 22);
-    write_register(REG_RX_PW_P1, 22);
+    /* Set length of incoming payload  */
+    write_register(REG_RX_PW_P0, PAYLOAD_SIZE);
+    write_register(REG_RX_PW_P1, PAYLOAD_SIZE);
 
     /* Enable RX addresses */
     write_register(REG_EN_RXADDR, ( (1 << BIT_ERX_P0) | (1 << BIT_ERX_P1) ));
@@ -282,4 +282,21 @@ void nrf24_disable_dpl(void)
     write_register(REG_DYNPD, 0);
 
     nrf24_toggle_activate();
+}
+
+void nrf24_read_rx_data(uint8_t * data) 
+{
+    int i;
+
+    digitalWrite(PIN_CSN, LOW);
+    SPI.transfer(R_RX_PAYLOAD);
+
+    for(i = 0;i < PAYLOAD_SIZE;i++){
+		data[i] = SPI.transfer(0xFF);
+	}
+
+    digitalWrite(PIN_CSN, HIGH);                              
+    
+    /* Set bit to indicate that data was read */
+    configRegister(STATUS,(1<<RX_DR));   
 }

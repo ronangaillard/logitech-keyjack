@@ -8,6 +8,7 @@
 
 #define DEFAULT_RF_SETUP    ( (1 << BIT_LNA_HCURR ) | (0x3 << BIT_RF_PWR))
 
+#define PAYLOAD_SIZE        22
 
 /* PINS */
 #define PIN_CE  8
@@ -113,5 +114,6 @@ void nrf24_power_rx(void);
 void nrf24_set_config(uint8_t value);
 void nrf24_enable_dpl(void);
 void nrf24_disable_dpl(void);
+void nrf24_read_rx_data(uint8_t * data);
 
 #endif
