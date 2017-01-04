@@ -288,15 +288,16 @@ void nrf24_read_rx_data(uint8_t * data)
 {
     int i;
 
-    digitalWrite(PIN_CSN, LOW);
+    nrf24_unselect();
+    nrf24_select();
     SPI.transfer(R_RX_PAYLOAD);
 
     for(i = 0;i < PAYLOAD_SIZE;i++){
 		data[i] = SPI.transfer(0xFF);
 	}
 
-    digitalWrite(PIN_CSN, HIGH);                              
+    nrf24_unselect();                          
     
     /* Set bit to indicate that data was read */
-    configRegister(STATUS,(1<<RX_DR));   
+    write_register(REG_STATUS, (1 << BIT_RX_DR));   
 }
