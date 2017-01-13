@@ -33,9 +33,9 @@ void loop()
 
   while (!kb_found)
   {
-    for (channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel += 3)
-    {
-      nrf24_set_channel(channel);
+    //for (channel = LOGITECH_START_FREQUENCY; channel <= LOGITECH_END_FREQUENCY; channel += 3)
+    //{
+      //nrf24_set_channel(channel);
 
       nrf24_power_rx();
 
@@ -50,7 +50,9 @@ void loop()
       }
 
       Serial.print(".");
-    }
+      if(channel == 125)
+        Serial.println();
+    //}
   }
 
   Serial.println("Reading data");

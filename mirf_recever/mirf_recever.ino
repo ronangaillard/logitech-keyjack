@@ -1,5 +1,5 @@
 /*
-    émission d’une valeur integer via module nRF24L01
+    réception d’une valeur integer via module nRF24L01
 */
 
 #include <SPI.h> // gestion du bus SPI
@@ -7,9 +7,10 @@
 #include <nRF24L01.h> // définition des registres du nRF24L01
 #include <MirfHardwareSpiDriver.h> // communication SPI nRF24L01
 
-byte valeur[22];  // contient la valeur à envoyer
-byte valeur_octet[2]; // contient la valeur découpée en octet pour l’envoi
+byte valeur[22];  // contient la valeur à recevoir
+byte valeur_octet[2]; // contient la valeur découpée en octet pour la réception
 byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0x8, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x32, 0xD0};
+byte onChannel = 0;
 void setup()
 {
   uint8_t base_mac_address[] = {0xBB, 0x0A, 0xDC, 0xA5, 0x75};
@@ -26,38 +27,41 @@ void setup()
   Mirf.setTADDR(base_mac_address); // définition adresse sur 5 octets de la 2ème carte Arduino
   Mirf.setRADDR(base_mac_address); // définition adresse sur 5 octets de la 1ere carte Arduino
   Serial.begin(230400);
-  Serial.println("Ready to connect!");
 }
 
 void loop()
 {
-  int k = 0;
   while(Mirf.isSending())
   {
     // en cours d’émission
   }
-  Mirf.send(pairing_packet);
-  Serial.println("pairing packet sent");
-  while(Mirf.isSending())
-  {
-    // en cours d’émission
-  }
-  while(!Mirf.dataReady() && k < 100)
-  {
-    k++;
-    delay(10);
-  }
-  if (k>=100){
-    Serial.println("No ACK received");
-  } else {
-    Serial.println("ACK packets : ");
-    while(Mirf.dataReady()){
-      Mirf.getData(valeur);
-      for(int i =0;i<22;i++) {
-        Serial.println(valeur[i], HEX);
-      }
-    Serial.println();
+  if (Mirf.dataReady()) {
+    onChannel = 1;
+    Serial.print("Channel : ");
+    Serial.println(Mirf.channel);
+    Mirf.getData(valeur); 
+    for(int i =0;i<22;i++) {
+      Serial.print(valeur[i], HEX);
+      Serial.print(" ");
     }
+    Serial.println();
+  } else if(!onChannel) {
+    Serial.print(Mirf.channel);
+    Serial.print(" ");
+    Mirf.channel += 3;
+    if(Mirf.channel >= 128) {
+      Mirf.channel = 2;
+      Serial.println();
+    }
+    Mirf.configRegister(RF_CH,Mirf.channel);
   }
-  delay(1000);
+  /*
+    Serial.println();
+    while(Mirf.isSending())
+    {
+      // en cours d’émission
+    }
+    Mirf.send(pairing_packet);
+    */
+  delay(100);
 }
