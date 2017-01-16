@@ -298,15 +298,17 @@ uint8_t RF24::read_payload(void* buf, uint8_t data_len)
     }
 	endTransaction();
   #else
-
   beginTransaction();
   status = _SPI.transfer( R_RX_PAYLOAD );
+  blank_len = status - data_len;
   while ( data_len-- ) {
     *current++ = _SPI.transfer(0xFF);
   }
+  printf("Excess data : ");
   while ( blank_len-- ) {
-    _SPI.transfer(0xff);
+    printf("%x ", _SPI.transfer(0xff));
   }
+  Serial.println();
   flush_rx();
   endTransaction();
 

@@ -34,7 +34,12 @@ role_e role = role_pong_back;                                              // Th
 
 // A single byte to keep track of the data being sent back and forth
 byte counter = 1;
-byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0x8, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x32, 0xD0};
+byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0xa, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2f, 0xD0};
+//byte pairing_packet[] = {0x7F, 0x5F, 0x01, 0x31, 0x33, 0x73, 0x13, 0x37, 0x08, 0x10, 0x25, 0x04, 0x00, 0x02, 0x0C, 0x0, 0x0, 0x0, 0x0, 0x0, 0x71, 0x40};
+byte channel = 5;
+byte kb_found = 0;
+uint32_t kb_time = 0;
+
 void setup(){
 
   Serial.begin(115200);
@@ -53,12 +58,14 @@ void setup(){
     }
   }
   radio.setAutoAck(1);                    // Ensure autoACK is enabled
-  radio.enableAckPayload();               // Allow optional ack payloads
   radio.setRetries(0,15);                 // Smallest time between retries, max no. of retries
   radio.setPayloadSize(PAYLOAD_SIZE);                // Here we are sending 1-byte payloads to test the call-response speed
+  radio.enableDynamicPayloads();
+  radio.enableAckPayload();
+  radio.enableDynamicAck();
   radio.openWritingPipe(pipes[1]);        // Both radios listen on the same pipes by default, and switch when writing
   radio.openReadingPipe(1,pipes[0]);
-  radio.setChannel(2);
+  radio.setChannel(channel);
   radio.setDataRate(RF24_2MBPS);
   radio.startListening();                 // Start listening
   radio.printDetails();                   // Dump the configuration of the rf unit for debugging
@@ -70,16 +77,27 @@ void loop(void) {
     
     radio.stopListening();                                  // First, stop listening so we can talk.
         
-    printf("Now sending %d as payload. ",pairing_packet);
+    printf("Now sending %d as payload: ",pairing_packet);
     byte gotByte;  
     unsigned long time = micros();                          // Take the time, and send it.  This will block until complete   
                                                             //Called when STANDBY-I mode is engaged (User is finished sending)
-    if (!radio.write( &pairing_packet, PAYLOAD_SIZE )){
-      Serial.println(F("failed."));      
+    //radio.enableDynamicAck();
+    if (!radio.write( &pairing_packet, PAYLOAD_SIZE, 0)){
+      Serial.println(F("failed."));   
+      counter++;   
     }else{
-
       if(!radio.available()){ 
         Serial.println(F("Blank Payload Received.")); 
+        int read_count = 0;
+        radio.startListening();
+        while(read_count++ < 100) {
+          if(radio.available()) {
+            printf("ACK length : %d\n\r",radio.read( &gotByte, 1 ));
+            printf("Received %d\n\r", gotByte);
+          }
+          delay(1);
+        }
+        radio.stopListening();
       }else{
         while(radio.available() ){
           unsigned long tim = micros();
@@ -88,28 +106,47 @@ void loop(void) {
           counter++;
         }
       }
-
+    }
+    if(counter == 100) {
+      channel = channel + 3 < 128 ? channel + 3 : 2;
+      radio.setChannel(channel);
+      counter = 0;
     }
     // Try again later
-    delay(1000);
+    delay(10);
   }
 
   // Pong back role.  Receive each packet, dump it out, and send it back
 
   if ( role == role_pong_back ) {
     byte pipeNo;
+    byte ack_payload[] = {0x22, 0x23};
     byte gotByte[PAYLOAD_SIZE];                                       // Dump the payloads until we've gotten everything
+    
     while( radio.available(&pipeNo)){
-      printf("Received packet of length %d\n\r",radio.read( &gotByte, PAYLOAD_SIZE ));
-      radio.writeAckPayload(pipeNo,&pipeNo, 1 );   
+      //kb_found = 1;
+      //kb_time = millis();
+      int pack_length = radio.read( &gotByte, PAYLOAD_SIZE );
+      printf("Packet on channel %d\n\r", channel);
+
+      printf("Received packet of length %d\n\r",pack_length);
+      radio.writeAckPayload(pipeNo,&ack_payload, 2 );   
       printf("Received : ");
       for(int i =0; i<PAYLOAD_SIZE; i++) {
         printf("%x ",gotByte[i]);
       }
       Serial.println();
-      printf("Sending back %d as ackpayload\n\r",pipeNo);
-      
+      printf("Sending back %d as ackpayload\n\r",*ack_payload);
    }
+   
+   if (!kb_found) {
+      kb_found = 0;
+      channel = channel + 3 < 128 ? channel + 3 : 2;
+      radio.setChannel(channel);
+      delay(100);
+      //delayMicroseconds(128);
+   }
+   
  }
 
   // Change roles
