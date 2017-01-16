@@ -34,7 +34,9 @@ role_e role = role_pong_back;                                              // Th
 
 // A single byte to keep track of the data being sent back and forth
 byte counter = 1;
-byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0xa, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2f, 0xD0};
+byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0x8, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x32, 0xD0};
+byte payload_pairing_2[] =  {0x00, 0x5F, 0x02, 0x01, 0x02, 0x03, 0x04, 0x58, 0x8A, 0x51, 0xEA, 0x1E, 0x40, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x19};
+//byte pairing_packet[] = {0xA1, 0x5F, 0x1, 0xFB, 0xD6, 0x95, 0xCF, 0xa, 0x8, 0x40, 0x24, 0x4, 0x2, 0x1, 0x4D, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2f, 0xD0};
 //byte pairing_packet[] = {0x7F, 0x5F, 0x01, 0x31, 0x33, 0x73, 0x13, 0x37, 0x08, 0x10, 0x25, 0x04, 0x00, 0x02, 0x0C, 0x0, 0x0, 0x0, 0x0, 0x0, 0x71, 0x40};
 byte channel = 5;
 byte kb_found = 0;
@@ -57,8 +59,10 @@ void setup(){
 
     }
   }
+  
+  radio.stopListening();  
   radio.setAutoAck(1);                    // Ensure autoACK is enabled
-  radio.setRetries(0,15);                 // Smallest time between retries, max no. of retries
+  radio.setRetries(3,15);                 // Smallest time between retries, max no. of retries
   radio.setPayloadSize(PAYLOAD_SIZE);                // Here we are sending 1-byte payloads to test the call-response speed
   radio.enableDynamicPayloads();
   radio.enableAckPayload();
@@ -67,48 +71,71 @@ void setup(){
   radio.openReadingPipe(1,pipes[0]);
   radio.setChannel(channel);
   radio.setDataRate(RF24_2MBPS);
-  radio.startListening();                 // Start listening
-  radio.printDetails();                   // Dump the configuration of the rf unit for debugging
+  //radio.startListening();                 // Start listening
+ // radio.printDetails();                   // Dump the configuration of the rf unit for debugging
 }
 
 void loop(void) {
-
+delay(50);
   if (role == role_ping_out){
+    byte gotByte[PAYLOAD_SIZE]; 
     
     radio.stopListening();                                  // First, stop listening so we can talk.
-        
-    printf("Now sending %d as payload: ",pairing_packet);
-    byte gotByte;  
+     //radio.startListening();   
+    //printf("Now sending %d as payload: ",pairing_packet);
     unsigned long time = micros();                          // Take the time, and send it.  This will block until complete   
                                                             //Called when STANDBY-I mode is engaged (User is finished sending)
     //radio.enableDynamicAck();
-    if (!radio.write( &pairing_packet, PAYLOAD_SIZE, 0)){
-      Serial.println(F("failed."));   
+    //radio.openWritingPipe(pipes[1]);
+    byte test;
+    radio.writeAckPayload(1, pairing_packet, 22);
+    if (!radio.write( pairing_packet, PAYLOAD_SIZE, 1)){
+      Serial.print(".");   
       counter++;   
     }else{
+      //radio.startListening();
+      Serial.println("Success !");
+      radio.writeAckPayload(1, pairing_packet, 22);
+      if (!radio.write( pairing_packet, PAYLOAD_SIZE, 0))
+        Serial.println("Second write failed!");
+      //radio.printDetails(); 
+      Serial.println("Waiting for the f***ing ACK !");
+      int timeout = 100;
+      while(!(radio.available() || radio.isAckPayloadAvailable()))
+      {
+        delay(10);
+        timeout--;
+        /*if(timeout == 0){
+          radio.flush_tx();
+          return;
+        }*/
+      }
+      Serial.println("Ack payload is here !");
       if(!radio.available()){ 
         Serial.println(F("Blank Payload Received.")); 
         int read_count = 0;
-        radio.startListening();
-        while(read_count++ < 100) {
-          if(radio.available()) {
-            printf("ACK length : %d\n\r",radio.read( &gotByte, 1 ));
-            printf("Received %d\n\r", gotByte);
-          }
-          delay(1);
-        }
-        radio.stopListening();
+
+      
+        
       }else{
-        while(radio.available() ){
+        /*while(radio.available() ){
           unsigned long tim = micros();
           printf("ACK length : %d\n\r",radio.read( &gotByte, 1 ));
           printf("Got response %d, round-trip delay: %lu microseconds\n\r",gotByte,tim-time);
           counter++;
-        }
+        }*/
+        unsigned long tim = micros();
+          radio.read( gotByte, 22 );
+          //printf("Got response %d, round-trip delay: %lu microseconds\n\r",gotByte,tim-time);
+          pairing_set_1(gotByte);
+          counter++;
+          
+          //while(1){}
       }
     }
-    if(counter == 100) {
-      channel = channel + 3 < 128 ? channel + 3 : 2;
+    radio.flush_tx();
+    if(counter == 10) {
+      //channel = channel + 3 < 128 ? channel + 3 : 2;
       radio.setChannel(channel);
       counter = 0;
     }
@@ -126,7 +153,7 @@ void loop(void) {
     while( radio.available(&pipeNo)){
       //kb_found = 1;
       //kb_time = millis();
-      int pack_length = radio.read( &gotByte, PAYLOAD_SIZE );
+      int pack_length = radio.read( gotByte, PAYLOAD_SIZE );
       printf("Packet on channel %d\n\r", channel);
 
       printf("Received packet of length %d\n\r",pack_length);
@@ -139,13 +166,13 @@ void loop(void) {
       printf("Sending back %d as ackpayload\n\r",*ack_payload);
    }
    
-   if (!kb_found) {
+   /*if (!kb_found) {
       kb_found = 0;
       channel = channel + 3 < 128 ? channel + 3 : 2;
       radio.setChannel(channel);
       delay(100);
       //delayMicroseconds(128);
-   }
+   }*/
    
  }
 
@@ -157,7 +184,7 @@ void loop(void) {
     if ( c == 'T' && role == role_pong_back )
     {
       Serial.println(F("*** CHANGING TO TRANSMIT ROLE -- PRESS 'R' TO SWITCH BACK"));
-      radio.printDetails();                   // Dump the configuration of the rf unit for debugging
+      //radio.printDetails();                   // Dump the configuration of the rf unit for debugging
 
       role = role_ping_out;                  // Become the primary transmitter (ping out)
       radio.openWritingPipe(pipes[0]);
@@ -172,5 +199,85 @@ void loop(void) {
        radio.openReadingPipe(1,pipes[0]);
        radio.startListening();
     }
+  }
+}
+
+void pairing_set_1(byte* ack_payload)
+{
+   for(int i =0; i<PAYLOAD_SIZE; i++) {
+        printf("%x ",ack_payload[i]);
+      }
+
+  printf("\nStep : %d\n", ack_payload[2]);
+  printf("New address : ");
+
+  for(int i = 0;i < 4; i++)
+    printf("%02x:", ack_payload[i+3]);
+
+  printf("%02x", ack_payload[3+4]);
+
+    Serial.println("");
+
+/*byte buf[22];
+ radio.read( buf, 22 );
+ for(int i =0; i<PAYLOAD_SIZE; i++)
+    printf("%02x:", buf[i]);*/
+ 
+
+  byte new_add[5];
+
+  for(int i=0; i< 5;i++)
+    new_add[i] = ack_payload[3+(4-i)];
+radio.stopListening();
+  radio.openWritingPipe(new_add);        // Both radios listen on the same pipes by default, and switch when writing
+  radio.openReadingPipe(1,new_add);
+  delay(150);   
+  // radio.openWritingPipe(&ack_payload[3]);        // Both radios listen on the same pipes by default, and switch when writing
+  //radio.openReadingPipe(1,&ack_payload[3]);
+radio.startListening();
+radio.stopListening();
+
+
+ // radio.printDetails();
+
+radio.flush_tx();
+Serial.println("Waiting for dongle to switch address");
+
+    while(!radio.write( payload_pairing_2, PAYLOAD_SIZE, 0))
+    {
+      delay(200);
+      Serial.print('.');
+      radio.writeAckPayload(1, payload_pairing_2, PAYLOAD_SIZE);
+    }
+    Serial.println("");
+  while(1)
+  {
+    
+    if (!radio.write( payload_pairing_2, PAYLOAD_SIZE, 0)){
+      Serial.print('.');   
+      delay(100);
+      counter++;   
+    }else{
+      Serial.println("Waiting for the f***ing ACK !");
+      int timeout = 100;
+      while(!(radio.available() || radio.isAckPayloadAvailable()))
+      {
+        delay(10);
+        timeout--;
+        /*if(timeout == 0){
+          radio.flush_tx();
+          return;
+        }*/
+      }
+      Serial.println("Ack payload is here !");
+      byte ack_pay[22];
+          radio.read( ack_pay, 22 );
+         
+           for(int i =0; i<PAYLOAD_SIZE; i++) {
+        printf("%x ",ack_pay[i]);
+      }
+          while(1){}
+      
+  }
   }
 }
