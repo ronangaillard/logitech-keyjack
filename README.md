@@ -1,5 +1,9 @@
 # Keyjacking the Logitech K400
 
+## Notice
+
+If you're looking for a cleaner repo with a full logitech wireless mouse emulation running on Arduino you can visit : https://github.com/ronangaillard/logitech-mouse
+
 ## Purpose
 
 Keyjacking the Logitech K400 to prove securtiy issues with wireless input devices, and use Logitech dongle for our IMU mouse (WIP).
